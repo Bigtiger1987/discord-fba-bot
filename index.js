@@ -4,7 +4,7 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Tạo server express để giữ cho Render không bị 502
+// Giữ cho Render không bị 502
 const app = express();
 app.get("/", (req, res) => res.send("✅ Discord FBA Bot is alive!"));
 const PORT = process.env.PORT || 3000;
@@ -42,11 +42,13 @@ client.on("interactionCreate", async (interaction) => {
     const response = await fetch(url);
     let text = await response.text();
 
-    // Làm sạch text: bỏ Unit, xóa dấu ".." hoặc ký tự dư
+    // Làm sạch chuỗi trả về
     text = text
-      .replace(/\*\*/g, "") // bỏ ** nếu có
-      .replace(/Unit:[^\n]*\n/, "") // xóa dòng Unit
-      .replace(/^\s*[•.]+\s*/gm, "• "); // sửa lỗi có hai dấu chấm hoặc ký tự đầu dòng thừa
+      .replace(/\*\*/g, "")                // Bỏ ** nếu có
+      .replace(/Unit:[^\n]*\n/, "")        // Xóa dòng "Unit:"
+      .replace(/[•.]{2,}/g, "•")           // Nếu có ".." hoặc "••" thì chỉ để lại 1 bullet
+      .replace(/^\s*[•.]+\s*/gm, "• ")     // Chuẩn hóa đầu dòng: chỉ còn "• "
+      .trim();
 
     const color = unit === "inch_lbs" ? 0x3b82f6 : 0x22c55e;
     const { EmbedBuilder } = await import("discord.js");
@@ -77,17 +79,16 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu FBA:", error);
-    const errorMsg =
-      "❌ Có lỗi xảy ra khi tính toán FBA Fee. Vui lòng thử lại sau!";
+    const msg = "❌ Có lỗi xảy ra khi tính toán FBA Fee. Vui lòng thử lại sau!";
     if (interaction.deferred || interaction.replied) {
-      await interaction.editReply(errorMsg);
+      await interaction.editReply(msg);
     } else {
-      await interaction.reply(errorMsg);
+      await interaction.reply(msg);
     }
   }
 });
 
-// Đăng ký slash command /fba
+// Đăng ký lệnh /fba
 client.on("ready", async () => {
   const commands = [
     {
