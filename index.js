@@ -62,9 +62,12 @@ client.on("interactionCreate", async (interaction) => {
         }
       )
       .addFields({
-        name: "Result",
-        value: `\`\`\`${text.replace(/\*\*/g, "")}\`\`\``,
-      })
+  name: "Result",
+  value: `\`\`\`${text
+    .replace(/\*\*/g, "")
+    .replace(/Unit:[^\n]*\n/, "")}\`\`\``, // ✅ Xóa dòng "Unit: ..." ở trước Size Tier
+})
+
       .setFooter({ text: "Dashboard 2025 • Eneocare" })
       .setTimestamp();
 
