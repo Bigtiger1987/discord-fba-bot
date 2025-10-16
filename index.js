@@ -40,12 +40,13 @@ client.on("interactionCreate", async (interaction) => {
     const response = await fetch(url);
     let text = await response.text();
 
-    // Làm sạch chuỗi trả về
+    // Làm sạch chuỗi trả về (đã fix triệt để)
     text = text
-      .replace(/\*\*/g, "")                  // bỏ ** nếu có
-      .replace(/Unit:[^\r\n]*(\r?\n|\n\r)/, "") // xóa dòng Unit: xử lý cả \r\n hoặc \n\r
-      .replace(/^[\s.]+(?=•)/gm, "")         // xóa mọi dấu . hoặc khoảng trắng trước dấu •
-      .replace(/^\s*[•.]+\s*/gm, "• ")       // chuẩn hóa bullet đầu dòng
+      .replace(/\*\*/g, "") // bỏ ** nếu có
+      .replace(/Unit:[^\r\n]*(\r?\n|\n\r)/, "") // xóa dòng Unit:
+      .replace(/^[^•]+(?=• Size Tier)/m, "") // xóa mọi ký tự trước dòng đầu tiên có "• Size Tier"
+      .replace(/^[\s.]+(?=•)/gm, "") // xóa ký tự . hoặc khoảng trắng trước bullet
+      .replace(/^\s*[•.]+\s*/gm, "• ") // chuẩn hóa bullet
       .trim();
 
     const color = unit === "inch_lbs" ? 0x3b82f6 : 0x22c55e;
@@ -116,3 +117,4 @@ client.on("ready", async () => {
 });
 
 client.login(DISCORD_TOKEN);
+
