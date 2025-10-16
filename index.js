@@ -24,10 +24,8 @@ client.once("ready", () => {
   console.log(`🤖 Bot đã đăng nhập thành công: ${client.user.tag}`);
 });
 
-// Slash command /fba
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) return;
-  if (interaction.commandName !== "fba") return;
+  if (!interaction.isCommand() || interaction.commandName !== "fba") return;
 
   const unit = interaction.options.getString("unit");
   const l = interaction.options.getNumber("length");
@@ -44,10 +42,10 @@ client.on("interactionCreate", async (interaction) => {
 
     // Làm sạch chuỗi trả về
     text = text
-      .replace(/\*\*/g, "")                // Bỏ ** nếu có
-      .replace(/Unit:[^\n]*\n/, "")        // Xóa dòng "Unit:"
-      .replace(/[•.]{2,}/g, "•")           // Nếu có ".." hoặc "••" thì chỉ để lại 1 bullet
-      .replace(/^\s*[•.]+\s*/gm, "• ")     // Chuẩn hóa đầu dòng: chỉ còn "• "
+      .replace(/\*\*/g, "")                  // bỏ ** nếu có
+      .replace(/Unit:[^\r\n]*(\r?\n|\n\r)/, "") // xóa dòng Unit: xử lý cả \r\n hoặc \n\r
+      .replace(/^[\s.]+(?=•)/gm, "")         // xóa mọi dấu . hoặc khoảng trắng trước dấu •
+      .replace(/^\s*[•.]+\s*/gm, "• ")       // chuẩn hóa bullet đầu dòng
       .trim();
 
     const color = unit === "inch_lbs" ? 0x3b82f6 : 0x22c55e;
