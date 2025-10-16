@@ -40,12 +40,9 @@ client.on("interactionCreate", async (interaction) => {
     const response = await fetch(url);
     let text = await response.text();
 
-    // Làm sạch chuỗi trả về (đã fix triệt để)
+    // Làm sạch định dạng, KHÔNG xóa Unit:
     text = text
       .replace(/\*\*/g, "") // bỏ ** nếu có
-      .replace(/Unit:[^\r\n]*(\r?\n|\n\r)/, "") // xóa dòng Unit:
-      .replace(/^[^•]+(?=• Size Tier)/m, "") // xóa mọi ký tự trước dòng đầu tiên có "• Size Tier"
-      .replace(/^[\s.]+(?=•)/gm, "") // xóa ký tự . hoặc khoảng trắng trước bullet
       .replace(/^\s*[•.]+\s*/gm, "• ") // chuẩn hóa bullet
       .trim();
 
@@ -56,12 +53,8 @@ client.on("interactionCreate", async (interaction) => {
       .setColor(color)
       .setTitle("📦 FBA Fee Result")
       .setDescription("Kết quả tính phí FBA")
+      // Ẩn Unit ở đầu vì đã có trong text trả về
       .addFields(
-        {
-          name: "Unit",
-          value: unit === "inch_lbs" ? "inch / lbs" : "cm / gram",
-          inline: true,
-        },
         {
           name: "Input",
           value: `📏 ${l} × ${w} × ${h}\n⚖️ ${weight}`,
@@ -117,4 +110,3 @@ client.on("ready", async () => {
 });
 
 client.login(DISCORD_TOKEN);
-
