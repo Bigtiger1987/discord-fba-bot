@@ -40,11 +40,17 @@ client.on("interactionCreate", async (interaction) => {
   try {
     const url = `${SCRIPT_URL}?unit=${unit}&l=${l}&w=${w}&h=${h}&weight=${weight}`;
     const response = await fetch(url);
-    const text = await response.text();
+    let text = await response.text();
 
-    // Embed đẹp
+    // Làm sạch text: bỏ Unit, xóa dấu ".." hoặc ký tự dư
+    text = text
+      .replace(/\*\*/g, "") // bỏ ** nếu có
+      .replace(/Unit:[^\n]*\n/, "") // xóa dòng Unit
+      .replace(/^\s*[•.]+\s*/gm, "• "); // sửa lỗi có hai dấu chấm hoặc ký tự đầu dòng thừa
+
     const color = unit === "inch_lbs" ? 0x3b82f6 : 0x22c55e;
     const { EmbedBuilder } = await import("discord.js");
+
     const embed = new EmbedBuilder()
       .setColor(color)
       .setTitle("📦 FBA Fee Result")
@@ -59,29 +65,24 @@ client.on("interactionCreate", async (interaction) => {
           name: "Input",
           value: `📏 ${l} × ${w} × ${h}\n⚖️ ${weight}`,
           inline: true,
+        },
+        {
+          name: "Result",
+          value: `\`\`\`${text}\`\`\``,
         }
       )
-      .addFields({
-  name: "Result",
-  value: `\`\`\`${text
-    .replace(/\*\*/g, "")
-    .replace(/Unit:[^\n]*\n/, "")}\`\`\``, // ✅ Xóa dòng "Unit: ..." ở trước Size Tier
-})
-
-      .setFooter({ text: "Dashboard 2025 • Eneocare" })
+      .setFooter({ text: "Amazon 2025 • Eneocare" })
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.error("Lỗi khi lấy dữ liệu FBA:", error);
+    const errorMsg =
+      "❌ Có lỗi xảy ra khi tính toán FBA Fee. Vui lòng thử lại sau!";
     if (interaction.deferred || interaction.replied) {
-      await interaction.editReply(
-        "❌ Có lỗi xảy ra khi tính toán FBA Fee. Vui lòng thử lại sau!"
-      );
+      await interaction.editReply(errorMsg);
     } else {
-      await interaction.reply(
-        "❌ Có lỗi xảy ra khi tính toán FBA Fee. Vui lòng thử lại sau!"
-      );
+      await interaction.reply(errorMsg);
     }
   }
 });
@@ -103,30 +104,10 @@ client.on("ready", async () => {
             { name: "inch / lbs", value: "inch_lbs" },
           ],
         },
-        {
-          name: "length",
-          type: 10, // số (float)
-          description: "Chiều dài",
-          required: true,
-        },
-        {
-          name: "width",
-          type: 10,
-          description: "Chiều rộng",
-          required: true,
-        },
-        {
-          name: "height",
-          type: 10,
-          description: "Chiều cao",
-          required: true,
-        },
-        {
-          name: "weight",
-          type: 10,
-          description: "Cân nặng",
-          required: true,
-        },
+        { name: "length", type: 10, description: "Chiều dài", required: true },
+        { name: "width", type: 10, description: "Chiều rộng", required: true },
+        { name: "height", type: 10, description: "Chiều cao", required: true },
+        { name: "weight", type: 10, description: "Cân nặng", required: true },
       ],
     },
   ];
