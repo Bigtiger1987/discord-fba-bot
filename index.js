@@ -4,18 +4,18 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Giữ cho Render không bị 502
+// === Giữ cho Render không bị 502 (web server ping check) ===
 const app = express();
 app.get("/", (req, res) => res.send("✅ Discord FBA Bot is alive!"));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🌐 Web server is running on port ${PORT}`));
 
-// Cấu hình
+// === Cấu hình ===
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxtLvBTb6DaHz1Wyz5PyjrR7fvBuoi1dj8CZ6hH44vSjJQkEneFM8Vi49DsrOW5wsyH2g/exec";
 
-// Khởi tạo bot
+// === Khởi tạo bot ===
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
@@ -24,6 +24,7 @@ client.once("ready", () => {
   console.log(`🤖 Bot đã đăng nhập thành công: ${client.user.tag}`);
 });
 
+// === Lệnh /fba ===
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand() || interaction.commandName !== "fba") return;
 
@@ -40,20 +41,20 @@ client.on("interactionCreate", async (interaction) => {
     const response = await fetch(url);
     let text = await response.text();
 
-    // Làm sạch định dạng, KHÔNG xóa Unit:
+    // ✅ Làm sạch định dạng và chuẩn hóa bullet list
     text = text
       .replace(/\*\*/g, "") // bỏ ** nếu có
-      .replace(/^\s*[•.]+\s*/gm, "• ") // chuẩn hóa bullet
+      .replace(/ ?•/g, "\n•") // đảm bảo mỗi bullet xuống dòng
       .trim();
 
     const color = unit === "inch_lbs" ? 0x3b82f6 : 0x22c55e;
     const { EmbedBuilder } = await import("discord.js");
 
+    // ✅ Embed gọn gàng, không còn phần Unit riêng ở trên
     const embed = new EmbedBuilder()
       .setColor(color)
       .setTitle("📦 FBA Fee Result")
       .setDescription("Kết quả tính phí FBA")
-      // Ẩn Unit ở đầu vì đã có trong text trả về
       .addFields(
         {
           name: "Input",
@@ -62,7 +63,7 @@ client.on("interactionCreate", async (interaction) => {
         },
         {
           name: "Result",
-          value: `\`\`\`${text}\`\`\``,
+          value: `\`\`\`\n${text}\n\`\`\``,
         }
       )
       .setFooter({ text: "Amazon 2025 • Eneocare" })
@@ -70,7 +71,7 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.editReply({ embeds: [embed] });
   } catch (error) {
-    console.error("Lỗi khi lấy dữ liệu FBA:", error);
+    console.error("❌ Lỗi khi lấy dữ liệu FBA:", error);
     const msg = "❌ Có lỗi xảy ra khi tính toán FBA Fee. Vui lòng thử lại sau!";
     if (interaction.deferred || interaction.replied) {
       await interaction.editReply(msg);
@@ -80,7 +81,7 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-// Đăng ký lệnh /fba
+// === Đăng ký slash command /fba ===
 client.on("ready", async () => {
   const commands = [
     {
@@ -110,4 +111,5 @@ client.on("ready", async () => {
 });
 
 client.login(DISCORD_TOKEN);
+
 
