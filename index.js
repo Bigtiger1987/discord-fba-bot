@@ -44,9 +44,9 @@ client.on("interactionCreate", async (interaction) => {
 
     // Dọn sạch chuỗi trả về, tránh lỗi format
     text = text
-      .replace(/\*\*/g, "") // bỏ dấu ** nếu có
-      .replace(/\s*•/g, "•") // xóa khoảng trắng dư trước bullet
-      .trim();
+  .replace(/\*\*/g, "") // bỏ dấu ** nếu có
+  .replace(/ ?•/g, "\n•") // luôn thêm xuống dòng trước mỗi bullet
+  .trim();
 
     // Màu embed tùy đơn vị
     const color = unit === "inch_lbs" ? 0x3b82f6 : 0x22c55e;
